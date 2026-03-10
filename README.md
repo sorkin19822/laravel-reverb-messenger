@@ -1,59 +1,266 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel Reverb Messenger
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Real-time messenger built with Laravel 11, WebSockets via Laravel Reverb, Redis broadcasting, and MySQL. Users can register, log in, and exchange messages that are delivered instantly without page reload.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Component | Technology |
+|---|---|
+| Backend | Laravel 11, PHP 8.4 |
+| WebSocket server | Laravel Reverb |
+| Broadcasting | Redis |
+| Database | MySQL 8 |
+| Frontend | Blade, Pusher.js, Vite + Tailwind CSS 4 |
+| Infrastructure | Docker, Docker Compose, Nginx |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [Docker](https://docs.docker.com/get-docker/) 24+
+- [Docker Compose](https://docs.docker.com/compose/install/) v2+
+- Ports **8080** (HTTP), **8081** (WebSocket), **3306** (MySQL), **6379** (Redis) must be free
 
-## Learning Laravel
+## Quick Start
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+# 1. Clone the repository
+git clone <repo-url>
+cd laravel-reverb-messenger
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# 2. Copy environment file
+cp .env.example .env
 
-## Laravel Sponsors
+# 3. Build images, start containers, run migrations, build assets
+make setup
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# 4. Open in browser
+open http://localhost:8080
+```
 
-### Premium Partners
+`make setup` automatically:
+- Starts all 6 Docker containers
+- Waits for MySQL to be ready (via healthcheck)
+- Generates `APP_KEY`
+- Runs migrations
+- Creates `storage` symlink
+- Installs npm dependencies and builds assets
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Manual Setup (step by step)
 
-## Contributing
+```bash
+# Build Docker images
+make build
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Start containers
+make up
 
-## Code of Conduct
+# Generate application key
+make key
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Run migrations
+make migrate
 
-## Security Vulnerabilities
+# (Optional) seed test users: alice@example.com, bob@example.com, charlie@example.com
+docker compose exec app php artisan db:seed
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Install npm dependencies and build assets
+make npm-install
+make npm-build
+```
 
-## License
+## Services
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Container | URL | Description |
+|---|---|---|
+| `messenger_nginx` | http://localhost:8080 | Web application |
+| `messenger_reverb` | ws://localhost:8081 | WebSocket server |
+| `messenger_mysql` | localhost:3306 | MySQL database |
+| `messenger_redis` | localhost:6379 | Redis |
+| `messenger_app` | — | PHP-FPM |
+| `messenger_queue` | — | Queue worker |
+
+## Environment Variables
+
+Key variables in `.env`:
+
+```dotenv
+# Application
+APP_URL=http://localhost:8080
+APP_DEBUG=false               # set true only in local development
+
+# Database
+DB_HOST=mysql                 # Docker service name
+DB_DATABASE=messenger
+DB_USERNAME=messenger
+DB_PASSWORD=your-db-password  # change before deploying
+
+# Redis
+REDIS_HOST=redis              # Docker service name
+
+# Broadcasting
+BROADCAST_CONNECTION=reverb
+QUEUE_CONNECTION=redis
+
+# Reverb — browser client (host-machine facing)
+REVERB_HOST=localhost
+REVERB_PORT=8081
+REVERB_SCHEME=http
+
+# Reverb — server side (Docker-internal)
+REVERB_SERVER_HOST=reverb     # Docker service name
+REVERB_SERVER_PORT=8080
+```
+
+> **Note:** `REVERB_HOST/PORT` are used by the browser to connect via WebSocket.
+> `REVERB_SERVER_HOST/PORT` are used by the PHP app container to publish events to Reverb over the Docker internal network.
+
+## Makefile Commands
+
+```bash
+make build        # Build Docker images (no cache)
+make up           # Start all containers
+make down         # Stop all containers
+make setup        # Full first-time setup (build + up + migrate + assets)
+make migrate      # Run database migrations
+make fresh        # Drop all tables, re-migrate and seed
+make shell        # Open bash shell inside app container
+make logs         # Tail logs from all containers
+make cache-clear  # Clear Laravel caches (config, route, view, cache)
+make npm-install  # Install npm dependencies via Node container
+make npm-build    # Build frontend assets via Node container
+```
+
+## Running Tests
+
+```bash
+docker compose exec app php artisan test
+```
+
+```
+Tests:    34 passed (83 assertions)
+Duration: ~1s
+```
+
+Test coverage:
+- `Auth/RegistrationTest` — registration form validation (7 tests)
+- `Auth/LoginTest` — login, logout, redirects (5 tests)
+- `UserListTest` — user list, unread badge (4 tests)
+- `MessageTest` — chat, send, broadcast, self-chat guard, isolation (12 tests)
+- `MessageModelTest` — model relations and casts (4 tests)
+
+## Architecture
+
+```
+Browser A                                        Browser B
+    │                                                │
+    │ POST /chat/{B}/messages                        │
+    ▼                                                │
+[Nginx :8080]                                        │
+    │                                                │
+    ▼                                                │
+[PHP-FPM app]                                        │
+MessageController::store()                           │
+    ├── Message::save() ──────────────► [MySQL]      │
+    └── broadcast(MessageSent) ──────► [Redis Queue] │
+                                            │        │
+                                     [Queue Worker]  │
+                                            │        │
+                                       [Reverb :8081]│
+                                            └───────►│
+                                         WebSocket   │
+                                    private-chat.B.id│
+                                                     ▼
+                                         appendMessage() — no reload
+```
+
+**Key design decisions:**
+- `ShouldBroadcast` (not `ShouldBroadcastNow`) — event goes through Redis queue, HTTP response is not blocked
+- `PrivateChannel('chat.{receiver_id}')` — only the recipient can subscribe, authorization enforced in `routes/channels.php`
+- `toOthers()` — sender receives their own message via JSON response, not via WebSocket (prevents duplicates)
+- `DB::transaction` wraps fetch + mark-as-read — prevents race condition with concurrent messages
+- Missed messages tracked via `is_read` flag — shown as badge on user list on next login
+
+## Project Structure
+
+```
+app/
+├── Events/
+│   └── MessageSent.php          # ShouldBroadcast event → PrivateChannel
+├── Http/Controllers/
+│   ├── Auth/
+│   │   ├── LoginController.php  # login, logout
+│   │   └── RegisterController.php
+│   ├── MessageController.php    # chat view, send message
+│   └── UserController.php       # user list with unread counts
+└── Models/
+    ├── Message.php               # sender/receiver relations, conversation(), markAsRead()
+    └── User.php                  # sentMessages/receivedMessages relations
+
+database/
+├── factories/MessageFactory.php
+├── migrations/
+│   └── ..._create_messages_table.php  # sender_id, receiver_id, body, is_read
+└── seeders/DatabaseSeeder.php   # alice, bob, charlie (password: password)
+
+docker/
+├── nginx/default.conf           # reverse proxy + security headers + CSP
+└── php/Dockerfile               # PHP 8.4-fpm + pdo_mysql + redis + sockets
+
+resources/views/
+├── layouts/app.blade.php
+├── auth/{login,register}.blade.php
+├── users/index.blade.php        # user list + unread badge
+└── messages/chat.blade.php      # real-time chat + Pusher.js WebSocket
+
+routes/
+├── web.php                      # HTTP routes with throttle middleware
+└── channels.php                 # private channel authorization
+```
+
+## Test Credentials (after `db:seed`)
+
+| Name | Email | Password |
+|---|---|---|
+| Alice | alice@example.com | password |
+| Bob | bob@example.com | password |
+| Charlie | charlie@example.com | password |
+
+## Troubleshooting
+
+**WebSocket not connecting (`Connecting...` status)**
+```bash
+# Check Reverb is running
+docker compose logs reverb --tail=20
+
+# Verify REVERB_HOST/PORT in .env match your browser access URL
+# Default: localhost:8081
+```
+
+**Messages not delivered (stuck in queue)**
+```bash
+# Check queue worker
+docker compose logs queue --tail=20
+
+# Verify REVERB_SERVER_HOST=reverb (Docker service name, not localhost)
+docker compose exec app php artisan queue:work redis --once
+```
+
+**500 error on first start**
+```bash
+# Generate app key if missing
+make key
+
+# Clear config cache
+make cache-clear
+```
+
+**Assets not loading**
+```bash
+make npm-install && make npm-build
+```
+
+**Reset everything**
+```bash
+make down
+docker volume rm laravel-reverb-messenger_mysql_data
+make setup
+```
