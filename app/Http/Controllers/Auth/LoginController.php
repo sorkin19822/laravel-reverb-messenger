@@ -3,17 +3,28 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function showForm()
+    /**
+     * Show the login form.
+     */
+    public function showForm(): View
     {
         return view('auth.login');
     }
 
-    public function login(Request $request)
+    /**
+     * Authenticate the user with the provided credentials.
+     *
+     * On success, regenerates the session ID to prevent session fixation
+     * and redirects to the originally intended URL.
+     */
+    public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
             'email'    => 'required|email',
@@ -28,11 +39,15 @@ class LoginController extends Controller
         return back()->withErrors(['email' => 'Invalid credentials.']);
     }
 
-    public function logout(Request $request)
+    /**
+     * Log the user out and invalidate their session.
+     */
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 }
