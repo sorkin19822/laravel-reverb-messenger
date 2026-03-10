@@ -42,7 +42,7 @@ setup: up
 	@until docker compose exec mysql mysqladmin ping -h localhost -u messenger -psecret --silent 2>/dev/null; do sleep 1; done
 	docker compose exec app php artisan key:generate --force
 	docker compose exec app php artisan migrate --force
-	docker compose exec app php artisan storage:link
+	docker compose exec app php artisan storage:link --force
 	$(MAKE) npm-install
 	$(MAKE) npm-build
 	@echo "Setup complete! Visit http://localhost:8080"
