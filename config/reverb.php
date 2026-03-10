@@ -100,7 +100,7 @@ return [
                     'scheme' => env('REVERB_SCHEME', 'https'),
                     'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
                 ],
-                'allowed_origins'             => [env('APP_URL', 'http://localhost:8080')],
+                'allowed_origins'             => [parse_url(env('APP_URL', 'http://localhost:8080'), PHP_URL_HOST)],
                 'ping_interval'               => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout'            => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_connections'             => env('REVERB_APP_MAX_CONNECTIONS'),
