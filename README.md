@@ -21,6 +21,8 @@ Real-time messenger built with Laravel 11, WebSockets via Laravel Reverb, Redis 
 
 ## Quick Start
 
+### Linux / macOS
+
 ```bash
 # 1. Clone the repository
 git clone <repo-url>
@@ -43,6 +45,32 @@ open http://localhost:8080
 - Runs migrations
 - Creates `storage` symlink
 - Installs npm dependencies and builds assets
+
+### Windows (PowerShell)
+
+`make` is not available in PowerShell — run the steps manually:
+
+```powershell
+# 1. Clone the repository
+git clone <repo-url>
+cd laravel-reverb-messenger
+
+# 2. Copy environment file
+cp .env.example .env
+
+# 3. Start containers
+docker compose up -d
+
+# 4. Wait ~15 seconds for MySQL to be ready, then run setup
+docker compose exec app php artisan key:generate --force
+docker compose exec app php artisan migrate --force
+docker compose exec app php artisan storage:link
+docker run --rm -v ${PWD}:/app -w /app node:20-alpine npm install
+docker run --rm -v ${PWD}:/app -w /app node:20-alpine npm run build
+
+# 5. Open in browser
+start http://localhost:8080
+```
 
 ## Manual Setup (step by step)
 
