@@ -53,7 +53,7 @@ class UserListTest extends TestCase
         $sender   = User::factory()->create();
         $receiver = User::factory()->create();
 
-        Message::create([
+        Message::factory()->create([
             'sender_id'   => $sender->id,
             'receiver_id' => $receiver->id,
             'body'        => 'Unread message',
@@ -63,7 +63,7 @@ class UserListTest extends TestCase
         $response = $this->actingAs($receiver)->get('/');
 
         $response->assertStatus(200);
-        // The view displays the unread count badge when unread > 0
-        $response->assertSee('1');
+        // Badge renders only when unread > 0 — assert the badge element appears
+        $response->assertSee('background:#ef4444', false);
     }
 }

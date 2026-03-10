@@ -74,11 +74,11 @@
     // -----------------------------------------------------------------------
     // Pusher / Reverb setup
     // -----------------------------------------------------------------------
-    const pusher = new Pusher('{{ config("broadcasting.connections.reverb.key") }}', {
-        wsHost:            '{{ env("REVERB_HOST", "localhost") }}',
-        wsPort:            {{ env("REVERB_PORT", 8081) }},
-        wssPort:           {{ env("REVERB_PORT", 8081) }},
-        forceTLS:          {{ env("REVERB_SCHEME", "http") === "https" ? "true" : "false" }},
+    const pusher = new Pusher('{{ config("reverb.client.key") }}', {
+        wsHost:            '{{ config("reverb.client.host") }}',
+        wsPort:            {{ config("reverb.client.port") }},
+        wssPort:           {{ config("reverb.client.port") }},
+        forceTLS:          {{ config("reverb.client.scheme") === "https" ? "true" : "false" }},
         enabledTransports: ['ws', 'wss'],
         cluster:           'mt1',
         authEndpoint:      '/broadcasting/auth',

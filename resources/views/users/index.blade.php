@@ -8,12 +8,7 @@
     @else
         <ul style="list-style:none;">
             @foreach($users as $user)
-            @php
-                $unread = \App\Models\Message::where('sender_id', $user->id)
-                    ->where('receiver_id', Auth::id())
-                    ->where('is_read', false)
-                    ->count();
-            @endphp
+            @php $unread = $unreadCounts[$user->id] ?? 0; @endphp
             <li style="padding:14px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div style="width:44px;height:44px;border-radius:50%;background:#4f46e5;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;flex-shrink:0;">

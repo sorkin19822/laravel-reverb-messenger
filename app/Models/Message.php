@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Message extends Model
 {
-    protected $fillable = ['sender_id', 'receiver_id', 'body', 'is_read'];
+    use HasFactory;
+    protected $fillable = ['body', 'is_read'];
 
     protected $casts = ['is_read' => 'boolean'];
 

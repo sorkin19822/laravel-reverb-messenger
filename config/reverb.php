@@ -17,6 +17,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Browser Client Configuration
+    |--------------------------------------------------------------------------
+    |
+    | These values are used by the frontend (Pusher.js) to connect to the
+    | Reverb WebSocket server from the browser. They differ from the server-
+    | side connection used internally by the PHP app within Docker.
+    |
+    */
+
+    'client' => [
+        'key'    => env('REVERB_APP_KEY'),
+        'host'   => env('REVERB_HOST', 'localhost'),
+        'port'   => env('REVERB_PORT', 8081),
+        'scheme' => env('REVERB_SCHEME', 'http'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Reverb Servers
     |--------------------------------------------------------------------------
     |
@@ -82,7 +100,7 @@ return [
                     'scheme' => env('REVERB_SCHEME', 'https'),
                     'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
                 ],
-                'allowed_origins'             => ['*'],
+                'allowed_origins'             => [env('APP_URL', 'http://localhost:8080')],
                 'ping_interval'               => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout'            => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_connections'             => env('REVERB_APP_MAX_CONNECTIONS'),
