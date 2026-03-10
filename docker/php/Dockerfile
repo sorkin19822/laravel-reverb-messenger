@@ -19,7 +19,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-RUN useradd -G www-data,root -u 1000 -d /home/devuser devuser \
+RUN useradd -G www-data -u 1000 -d /home/devuser devuser \
     && mkdir -p /home/devuser/.composer \
     && chown -R devuser:devuser /home/devuser
 

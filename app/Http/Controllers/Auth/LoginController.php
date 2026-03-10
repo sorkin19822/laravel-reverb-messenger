@@ -7,6 +7,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -33,9 +34,11 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+            Log::info('auth.login_success', ['user_id' => Auth::id(), 'ip' => $request->ip()]);
             return redirect()->intended(route('users.index'));
         }
 
+        Log::warning('auth.login_failed', ['email' => $request->input('email'), 'ip' => $request->ip()]);
         return back()->withErrors(['email' => 'Invalid credentials.']);
     }
 
