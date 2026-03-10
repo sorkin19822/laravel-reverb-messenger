@@ -37,7 +37,7 @@ npm-build:
 	docker run --rm -v $(PWD):/app -w /app node:20-alpine npm run build
 
 setup: up
-	docker compose exec app composer install --no-dev --optimize-autoloader
+	docker compose exec app composer install --optimize-autoloader
 	@echo "Waiting for MySQL to be ready..."
 	@until docker compose exec mysql mysqladmin ping -h localhost -u messenger -psecret --silent 2>/dev/null; do sleep 1; done
 	docker compose exec app php artisan key:generate --force
