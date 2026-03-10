@@ -61,14 +61,17 @@ cp .env.example .env
 # 3. Start containers
 docker compose up -d
 
-# 4. Wait ~15 seconds for MySQL to be ready, then run setup
+# 4. Install PHP dependencies
+docker compose exec app composer install --no-dev --optimize-autoloader
+
+# 5. Wait ~15 seconds for MySQL to be ready, then run setup
 docker compose exec app php artisan key:generate --force
 docker compose exec app php artisan migrate --force
 docker compose exec app php artisan storage:link
 docker run --rm -v ${PWD}:/app -w /app node:20-alpine npm install
 docker run --rm -v ${PWD}:/app -w /app node:20-alpine npm run build
 
-# 5. Open in browser
+# 6. Open in browser
 start http://localhost:8080
 ```
 
