@@ -76,6 +76,12 @@ docker run --rm -v ${PWD}:/app -w /app node:20-alpine npm run build
 start http://localhost:8080
 ```
 
+> **Note:** `db:seed` uses Faker which is a dev dependency. If you ran `composer install --no-dev` and seeding fails with `Call to undefined function fake()`, re-run with full dependencies:
+> ```powershell
+> docker compose exec app composer install --optimize-autoloader
+> docker compose exec app php artisan db:seed
+> ```
+
 ## Manual Setup (step by step)
 
 ```bash
