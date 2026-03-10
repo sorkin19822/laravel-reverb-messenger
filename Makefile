@@ -1,4 +1,4 @@
-.PHONY: up down build migrate fresh shell logs
+.PHONY: up down build migrate fresh shell logs npm-install npm-build setup cache-clear
 
 up:
 	docker compose up -d
@@ -38,8 +38,10 @@ npm-build:
 
 setup: up
 	@echo "Waiting for MySQL to be ready..."
-	@sleep 15
+	@until docker compose exec mysql mysqladmin ping -h localhost -u messenger -psecret --silent 2>/dev/null; do sleep 1; done
 	docker compose exec app php artisan key:generate --force
 	docker compose exec app php artisan migrate --force
 	docker compose exec app php artisan storage:link
+	$(MAKE) npm-install
+	$(MAKE) npm-build
 	@echo "Setup complete! Visit http://localhost:8080"
